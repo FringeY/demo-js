@@ -1,4 +1,5 @@
-/*
-!.gitignore
-!/download/res/images/*
-*.jpg
+/download/dist/*
+/download/index.html
+/download/gulpfile.js
+/download/res/less/*
+/queryString.js
