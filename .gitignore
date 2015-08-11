@@ -1,2 +1,4 @@
 !/download/res/images/*
-
+/*
+!.gitignore
+!/download/res/images/*
