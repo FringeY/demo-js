@@ -1,4 +1,5 @@
 /download/dist/*
+/download/node_modules/*
 /download/index.html
 /download/gulpfile.js
 /download/res/less/*
