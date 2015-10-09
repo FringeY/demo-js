@@ -1,0 +1,18 @@
+body {
+  width: 10rem;
+}
+[data-dpr="2"] body {
+  width: 10rem;
+}
+[data-dpr="2.5"] body {
+  width: 10rem;
+}
+[data-dpr="2.75"] body {
+  width: 10rem;
+}
+[data-dpr="3"] body {
+  width: 10rem;
+}
+[data-dpr="4"] body {
+  width: 10rem;
+}
