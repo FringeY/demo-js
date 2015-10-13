@@ -1,14 +1,18 @@
 var Tools = function () {
-    return Tools.prototype.init();
+    return new Tools.prototype.init();
 };
 
 Tools.prototype = {
     init: function () {
-        this.age = 13;
         return this;
     },
     name: function () {
-
+        // this.age = 13;
+        return this;
     },
     age: 20
 }
+
+
+
+Tools.prototype.init.prototype = Tools.prototype;
