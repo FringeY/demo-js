@@ -13,6 +13,6 @@ Tools.prototype = {
     age: 20
 }
 
-
+Tools.prototype.constructor = Tools;
 
 Tools.prototype.init.prototype = Tools.prototype;
