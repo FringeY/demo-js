@@ -5,7 +5,7 @@ var http = require('http'),
     name = process.argv[2] || '';
 
 var str = urlencode(name, 'gbk');
-if (name === '') {
+if (name === '') { // 是否输入教师姓名
     console.log('please input: node index.js (teacher name)');
 } else {
     http.get('http://jwzx.cqupt.edu.cn/pubTeaKebiao.php?searchKey=' + str, function (res) {
@@ -16,7 +16,14 @@ if (name === '') {
         });
         res.on('end', function () {
             data = iconv.decode(Buffer.concat(chunks), 'gb2312');
-            link = hostname + data.match(/<a.*<\/a>/)[0].match(/href=\'(.*)\'/)[1];
+            // 判断是否存在此老师
+            if (data.match(/<a.*<\/a>/)) {
+                link = hostname + data.match(/<a.*<\/a>/)[0].match(/href=\'(.*)\'/)[1];
+            } else {
+                console.log('error: 没有' + name + '的相关信息！')
+                return false;
+            }
+            
             http.get(link, function (res) {
                 var chunks = [], data, kebiao, classNum,
                     array = [],
