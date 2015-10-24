@@ -45,8 +45,7 @@ if (name === '') { // 是否输入教师姓名
                             } else if (ele.match(/title/g)) {
                                 return false;
                             } else {
-                                
-                                // console.log(ele);
+                                console.log(ele);
                                 classNum = ele.match(/<BR>/g).length;
                                 if (classNum === 1) {
                                     console.log('>>>' + Day[j - 1] + ',' + Time[tab - 1] + '<<<');
