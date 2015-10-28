@@ -1,4 +1,14 @@
-var nopause = (function () {
+var autoMooc = (function () {
+
+    var init = function () {
+        findBlur(document);
+        setInterval(function () {
+            var isEnd = $('iframe').contents().find('.ans-job-icon').css('background-position');
+            if (isEnd != '0% 0%') {
+                $('#openlock').trigger('click');
+            }
+        }, 10000);
+    }
     // 递归查找是否存在blur
     var findBlur = function (father) {
         // 获取传入节点子节点数
@@ -33,7 +43,7 @@ var nopause = (function () {
         console.log('rm ' + obj.nodeName + ' blur');
         return true;
     }
-
+    // test
     var test = function (father) {
         // 获取传入节点子节点数
         var length = father.childNodes.length;
@@ -64,8 +74,8 @@ var nopause = (function () {
     }
 
     return {
-        start: findBlur,
-        debug: test
+        init: init,
+        test: test
     };
 })();
 
