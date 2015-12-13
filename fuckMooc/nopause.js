@@ -4,8 +4,11 @@ var autoMooc = (function () {
         findBlur(document);
         setInterval(function () {
             var isEnd = $('iframe').contents().find('.ans-job-icon').css('background-position');
-            if (isEnd != '0% 0%') {
+            if (isEnd == '0px -24px') {
                 $('#openlock').trigger('click');
+                // setTimeout(function () {
+                    
+                // }, 10000);
             }
         }, 10000);
     }
@@ -78,7 +81,3 @@ var autoMooc = (function () {
         test: test
     };
 })();
-
-window.onload = function () {
-    nopause.start(document);
-}
