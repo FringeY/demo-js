@@ -5,32 +5,20 @@ var Promise = function (fn) {
     var promise = this;
     promise._state = 0;
     promise._value;
-    promise._reason;
     promise._callbacks = [];
-    var resolve = function (data) {
-        promise._state = 1;
-        promise._value = data;
-        promise._exec(promise);
-    };
-    var reject = function (err) {
-        promise._state = 2;
-        promise._reason = err;
-        promise._exec(promise);
-    };
-    fn(resolve, reject);
+    fn(promise.resolve.bind(promise), promise.reject.bind(promise));
 }
 
 Promise.prototype = {
-    resolve: function (promise, x) {
-        if (promise === x) {
-            return;
-        }
-        promise._value = x;
-        promise._exec(promise);
+    resolve: function (data) {
+        this._state = 1;
+        this._value = data;
+        this._exec(this);
     },
-    reject: function (promise, x) {
-        promise._reason = x;
-        promise._exec(promise);
+    reject: function (err) {
+        this._state = 2;
+        this._value = err;
+        this._exec(this);
     },
     then: function (onFulfilled, onRejected) {
         var self = this;
@@ -41,9 +29,11 @@ Promise.prototype = {
             rejected: onRejected,
             then: promise
         });
+        
         return promise;
     },
     _exec: function (promise) {
+        console.log(promise);
         if (promise._state === 0) {
             return;
         }
@@ -52,22 +42,26 @@ Promise.prototype = {
             while (promise._callbacks.length) {
                 var fn = promise._callbacks.shift();
                 try {
-                    var value = (promise._state === 1 ? 
-                        (fn.fulfilled || function (x) {return x}) :
+                    (promise._state === 1 ? 
+                        (fn.fulfilled || function (x) {return x}) : 
                         (fn.rejected || function (x) {return x})
-                        )(promise._value);
+                        )(promise._value, promise.resolve.bind(fn.then));
                 } catch (e) {
-                    promise.reject(fn.then, e);
+                    promise.reject.bind(fn.then, e);
                     continue;
                 } 
-                promise.resolve(fn.then, value);
             }
         }, 0);
     }
 }
 
+var test = new Promise(function (resolve, reject) {
+    setTimeout(function () {resolve(2);console.log(111)},2000);
+});
 
-
-
-
-
+test.then(function (value, resolve) {
+    setTimeout(function () {resolve(3);console.log(value)},2000);
+}).then(function (value, resolve) {
+    resolve();
+    console.log(value);
+});
