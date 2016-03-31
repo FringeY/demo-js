@@ -1,96 +1,70 @@
 var http = require('http'),
     iconv = require('iconv-lite'),
     urlencode = require('urlencode'),
+    mysql = require('mysql'),
     link = 'http://jwzx.cqupt.edu.cn/pubBjStu.php?searchKey=',
-    grade = [2012,2013,2014,2015],
-    range = [210000,220000];
+    time = 0,
+    range = [{
+        start: 2015210000,
+        end: 2015220010
+    }];
 
-// grade.foreach(function (i, ele) {
-    http.get(link + 2013211484, function (res) {
+var mysql      = require('mysql');
+var connection = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'root',
+  password : '182617',
+  database : 'test'
+});
+
+connection.connect(function (err) {
+    if (err) {
+        console.log(err.message);
+    }
+});
+
+function control (time) {
+    if (time == range.length) {
+        connection.end();
+        return false;
+    }
+    getStuInfo(range[time].start, range[time].end, getStuInfo);    
+}
+
+function getStuInfo (start, end, callback) {
+    if (start > end) {
+        control(++time);
+        return false;
+    }
+    http.get(link + start, function (res) {
         var chunks = [], data;
         res.on('data', function (chunk) {
             chunks.push(chunk);
         });
         res.on('end', function () {
             data = iconv.decode(Buffer.concat(chunks), 'gb2312');
-            console.log(data);
+            var arr = data.match(/&nbsp;.*<\/td><td>/gi)[0].split('</td>');
+            var student = [];
+            for (var i = 0; i < arr.length; i++) {
+                var exg = arr[i].match(/&nbsp;(.*)/i);
+                student.push(exg ? exg[1] : 'null');
+            }
+            if (!student[0]) {
+                callback(start+1, end, callback);
+                return false;
+            }
+            
+            var data = {stu_id: student[0], stu_name: student[1], stu_sex: student[2].slice(0,1) == '男' ? 1 : 0, stu_class: student[3], stu_zhuanye: student[4], stu_xueyuan: student[5]};
+            connection.query('INSERT INTO student SET ?', data, function(err, result) {
+                if (err) {
+                    console.log(err.message);
+                }
+                console.log('insert' + student[0]);
+                callback(start+1, end, callback);
+            });
         });
     });
-// });
-// var str = urlencode(name, 'gbk');
-// if (name === '') { // 是否输入教师姓名
-//     console.log('please input: node index.js (teacher name)');
-// } else {
-//     http.get('http://jwzx.cqupt.edu.cn/pubTeaKebiao.php?searchKey=' + str, function (res) {
-//         var chunks = [], data, link;
+}
 
-//         res.on('data', function (chunk) {
-//             chunks.push(chunk);
-//         });
-//         res.on('end', function () {
-//             data = iconv.decode(Buffer.concat(chunks), 'gb2312');
-//             // 判断是否存在此老师
-//             if (data.match(/<a.*<\/a>/)) {
-//                 link = hostname + data.match(/<a.*<\/a>/)[0].match(/href=\'(.*)\'/)[1];
-//             } else {
-//                 console.log('error: 没有' + name + '的相关信息！')
-//                 return false;
-//             }
-            
-//             http.get(link, function (res) {
-//                 var chunks = [], data, kebiao, classNum,
-//                     array = [],
-//                     Time = ['一二节', '三四节', '五六节', '七八节', '九十节', '十一十二节'],
-//                     Day = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-
-//                 res.on('data', function (chunk) {
-//                     chunks.push(chunk);
-//                 });
-//                 res.on('end', function () {
-//                     data = iconv.decode(Buffer.concat(chunks), 'gb2312');
-//                     kebiao = data.match(/<tr>[\s\S]*<\/tr>/gi)[0];
-//                     array = kebiao.split('</tr><tr>');
-//                     array.forEach(function (ele, i) {
-//                         var tab = i;
-//                         tab === 0 ? '' : ele.split('</td><td').forEach(function (ele, j) {
-//                             if (ele === ' >&nbsp;' || ele === ' >&nbsp;</td>' || ele === ' >&nbsp;</td></tr>') {
-//                                 return false;
-//                             } else if (ele.match(/title/g)) {
-//                                 return false;
-//                             } else {
-//                                 console.log(ele);
-//                                 classNum = ele.match(/<BR>/g).length;
-//                                 if (classNum === 1) {
-//                                     console.log('>>>' + Day[j - 1] + ',' + Time[tab - 1] + '<<<');
-//                                     console.log('课程:' + ele.match(/>&nbsp;(.*)<br>/)[1]);
-//                                     console.log('专业:' + ele.match(/<BR>(.*)<br>班级/)[1]);
-//                                     console.log('类型:' + ele.match(/color=#ff0000>(.*)<\/font>/)[1]);
-//                                     console.log('周数:' + ele.match(/<br>(.*)<br><font/)[1]);
-//                                     console.log('教室:' + ele.match(/<br>(.*)\b/)[1]);
-//                                     console.log('班级:' + ele.match(/<br>班级：(.*)<br><a/)[1]);
-//                                     console.log('');
-//                                 } else {
-//                                     var tabs = ele.split('<br>');
-//                                     console.log('>>>' + Day[j - 1] + ',' + Time[tab - 1] + '<<<');
-//                                     for (var k = 0; k < classNum; k++) {
-//                                         console.log('课程:' + tabs[0 + k * 7].replace(' >&nbsp;', ''));
-//                                         console.log('专业:' + tabs[3 + k * 7].match(/BR>(.*)/)[1]);
-//                                         console.log('类型:' + tabs[3 + k * 7].match(/0>(.*)<\/font>/)[1]);
-//                                         console.log('周数:' + tabs[2 + k * 7]);
-//                                         console.log('教室:' + tabs[1 + k * 7].match(/(.*)\r\n/)[1]);
-//                                         console.log('班级:' + tabs[4 + k * 7].replace('班级：', ''));
-//                                         if (k !== (classNum - 1)) {
-//                                             console.log('---');
-//                                         }
-//                                     }
-//                                     console.log('');
-//                                 }
-//                             }
-//                         });;
-//                     });
-//                 });
-//             })
-//         });
-//     });    
-// }
+control(time);
 
